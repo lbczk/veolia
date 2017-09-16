@@ -2,9 +2,8 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
-# MODELS
-from sklearn.linear_model import Lasso
-from sklearn.linear_model import LinearRegression as LR
+from collections import Counter
+
 
 def cat_vectorize(values):
 	"""
@@ -17,17 +16,24 @@ def cat_vectorize(values):
 		res[i][values[i] - 1] = 1
 	return res
 
-# replacing categorical by a value between 0 and n_features - 1
-def categorical_naive(dataframe):
-	dataframe = dataframe.copy()
-	for f in dataframe.columns:
-	    if dataframe[f].dtype == 'object':
-	        lbl = preprocessing.LabelEncoder()
-	        lbl.fit(list(dataframe[f].values))
-	        dataframe[f+"_naive"] = lbl.transform(list(dataframe[f].values))
-	return dataframe
 
-def categorical(dataframe, threshold=50):
+def filter_values(values, threshold=50, default="DEF"):
+	"""
+	values is an array containing values of an arbitrary type
+	
+	filter_values returns an array where only values appearing more than threshold times 
+	are kept. Other entries are replaced by a value called default
+	"""
+	values = np.array(values)
+	count = Counter(values)
+	res =  values.copy()
+	for i in range(values.shape[0]):
+		if count[values[i]] < threshold:
+			res[i] = default
+	return res
+
+
+def categorical(dataframe, threshold=-1):
 	"""
 	Replaces the categorical columns in dataframe by vectorized version. 
 	Removes values appearing less than threshold
@@ -45,8 +51,8 @@ def categorical(dataframe, threshold=50):
 	        print "DOING IT FOR " , f , "--> " , res.shape[0] , res.shape[1]
 	        for i in range(res.shape[1]):
 	        	dataframe[f+"_"+str(i)] = res[:,i]
-	    if f != "y":
-	    	del dataframe[f]   
+	    	if f != "y":
+	    		del dataframe[f]   
 	return dataframe
 
 
@@ -57,16 +63,12 @@ def noncategorical(dataframe):
 	    	del dataframe[f]   
 	return dataframe
 
-from collections import Counter
-
-def filter_values(values, threshold=50, default="DEF"):
-	"""
-	Remove values below a given threshold
-	"""
-	values = np.array(values)
-	count = Counter(values)
-	res =  values.copy()
-	for i in range(values.shape[0]):
-		if count[values[i]] < threshold:
-			res[i] = default
-	return res
+# replacing categorical by a value between 0 and n_features - 1
+def categorical_naive(dataframe):
+	dataframe = dataframe.copy()
+	for f in dataframe.columns:
+	    if dataframe[f].dtype == 'object':
+	        lbl = preprocessing.LabelEncoder()
+	        lbl.fit(list(dataframe[f].values))
+	        dataframe[f+"_naive"] = lbl.transform(list(dataframe[f].values))
+	return dataframe
