@@ -1,8 +1,8 @@
-import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
 
 from collections import Counter
+
+from sklearn import preprocessing
 
 
 def cat_vectorize(values):
@@ -11,22 +11,21 @@ def cat_vectorize(values):
 	"""
 	values = np.array(values)
 	maximum = values.max()
-	res = np.zeros([values.shape[0], maximum])
+	res = np.zeros([values.shape[0], maximum + 1])
 	for i in range(values.shape[0]):
-		res[i][values[i] - 1] = 1
+		res[i][values[i]] = 1
 	return res
 
 
 def filter_values(values, threshold=50, default="DEF"):
 	"""
 	values is an array containing values of an arbitrary type
-	
-	filter_values returns an array where only values appearing more than threshold times 
+	filter_values returns an array where only values appearing more than threshold times
 	are kept. Other entries are replaced by a value called default
 	"""
 	values = np.array(values)
 	count = Counter(values)
-	res =  values.copy()
+	res = values.copy()
 	for i in range(values.shape[0]):
 		if count[values[i]] < threshold:
 			res[i] = default
@@ -35,7 +34,7 @@ def filter_values(values, threshold=50, default="DEF"):
 
 def categorical(dataframe, threshold=-1):
 	"""
-	Replaces the categorical columns in dataframe by vectorized version. 
+	Replaces the categorical columns in dataframe by vectorized version.
 	Removes values appearing less than threshold
 	"""
 	dataframe = dataframe.copy()
@@ -48,27 +47,9 @@ def categorical(dataframe, threshold=-1):
 	        values = lbl.transform(list(values))
 	        # filter values below threshold
 	        res = cat_vectorize(values)
-	        print "DOING IT FOR " , f , "--> " , res.shape[0] , res.shape[1]
+	        print("DOING IT FOR ", f, "--> ", res.shape[0], res.shape[1])
 	        for i in range(res.shape[1]):
-	        	dataframe[f+"_"+str(i)] = res[:,i]
+	        	dataframe[f + "_" + str(i)] = res[:, i]
 	    	if f != "y":
-	    		del dataframe[f]   
-	return dataframe
-
-
-def noncategorical(dataframe):
-	dataframe = dataframe.copy()
-	for f in dataframe.columns:
-	    if dataframe[f].dtype == 'object' or f == "y":
-	    	del dataframe[f]   
-	return dataframe
-
-# replacing categorical by a value between 0 and n_features - 1
-def categorical_naive(dataframe):
-	dataframe = dataframe.copy()
-	for f in dataframe.columns:
-	    if dataframe[f].dtype == 'object':
-	        lbl = preprocessing.LabelEncoder()
-	        lbl.fit(list(dataframe[f].values))
-	        dataframe[f+"_naive"] = lbl.transform(list(dataframe[f].values))
+	    		del dataframe[f]
 	return dataframe
