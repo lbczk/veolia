@@ -12,6 +12,10 @@ contains a few models (implemented in sci-kit learn)
 main.py:
 benchmarks some simple linear models.
 
+local.py:
+local search to optimize directly the cost function (AUC)
+(didn't function well in the end)
+
 the data files should be placed in a folder called `data' placed in the working directory.
 they should be renamed train.csv, test.csv, and output_train.csv
 
